@@ -91,9 +91,23 @@ export default function RolesPage() {
     }, 1000);
   };
 
-  const handleRoleFormSuccess = () => {
-    // Refresh the roles data (in a real app, you'd fetch from the API)
-    // For now, we'll just close the form and show a success message
+  const handleRoleFormSuccess = (newOrUpdatedRole?: Role) => {
+    // Here we need to update our state with the new or updated role
+    if (newOrUpdatedRole) {
+      // If it's an update to an existing role
+      if (editingRole) {
+        setRolePermissions(prev => 
+          prev.map(role => role.name === editingRole.name ? newOrUpdatedRole : role)
+        );
+      } 
+      // If it's a new role
+      else {
+        setRolePermissions(prev => [...prev, newOrUpdatedRole]);
+      }
+    }
+    
+    // Reset the editing state and close the form
+    setEditingRole(undefined);
     setRoleFormOpen(false);
   };
 

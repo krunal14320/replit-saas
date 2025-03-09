@@ -33,7 +33,7 @@ type RoleFormProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editRole?: Role;
-  onSuccess?: () => void;
+  onSuccess?: (role?: Role) => void;
 };
 
 export function RoleForm({ open, onOpenChange, editRole, onSuccess }: RoleFormProps) {
@@ -122,8 +122,14 @@ export function RoleForm({ open, onOpenChange, editRole, onSuccess }: RoleFormPr
           description: `The role has been ${editRole ? "updated" : "created"} successfully`,
         });
         
+        // Create a complete role object to pass back to the parent
+        const completeRole: Role = {
+          ...roleData,
+          id: editRole?.id || Math.floor(Math.random() * 1000) // Simulate an ID for new roles
+        };
+        
         onOpenChange(false);
-        if (onSuccess) onSuccess();
+        if (onSuccess) onSuccess(completeRole);
         setIsSubmitting(false);
       }, 1000);
       
