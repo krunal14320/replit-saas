@@ -25,9 +25,9 @@ type SidebarLinkProps = {
 const SidebarLink = ({ href, icon, children, active, onClick }: SidebarLinkProps) => {
   return (
     <Link href={href}>
-      <a
+      <div
         className={cn(
-          "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
+          "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer",
           active
             ? "text-white bg-gray-800"
             : "text-gray-300 hover:bg-gray-700 hover:text-white"
@@ -36,7 +36,7 @@ const SidebarLink = ({ href, icon, children, active, onClick }: SidebarLinkProps
       >
         <div className="mr-3 h-6 w-6 text-gray-400">{icon}</div>
         {children}
-      </a>
+      </div>
     </Link>
   );
 };
@@ -59,7 +59,7 @@ const SubMenu = ({ title, icon, children, defaultOpen = false }: SubMenuProps) =
       : [children];
     
     const shouldOpen = childLinks.some((child: React.ReactElement) => {
-      return child.props.href === location;
+      return child && child.props && child.props.href === location;
     });
     
     if (shouldOpen) {
