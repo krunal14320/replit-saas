@@ -214,5 +214,13 @@ export function Sidebar() {
   );
 }
 
-// Import the proper ThemeToggle component
-import { ThemeToggle } from "./theme-toggle";
+// Placeholder ThemeToggle component
+const ThemeToggle = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  return (
+    <button onClick={() => setIsDarkMode(!isDarkMode)}>
+      {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+    </button>
+  );
+};
