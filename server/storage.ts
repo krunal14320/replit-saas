@@ -2,7 +2,8 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import BetterSqlite3Session from "better-sqlite3-session";
+import session from "express-session";
+import connectSqlite3 from "connect-sqlite3";
 import path from "path";
 import * as schema from "../shared/schema";
 
@@ -10,13 +11,11 @@ const sqlite = new Database("data.db");
 const db = drizzle(sqlite, { schema });
 
 // Create session store
-const SqliteStore = BetterSqlite3Session();
+const SqliteStore = connectSqlite3(session);
 const sessionStore = new SqliteStore({
-  client: sqlite,
-  expired: {
-    clear: true,
-    intervalMs: 900000 //ms = 15min
-  }
+  db: "sessions.db",
+  dir: ".",
+  table: "sessions"
 });
 
 class Storage {
