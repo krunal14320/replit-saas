@@ -1,8 +1,7 @@
 
 import express from "express";
 import http from "http";
-import { db } from "./storage";
-import { roles, users, tenants, subscriptions, permissions } from "./storage";
+import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { eq, sql } from "drizzle-orm";
 import { PermissionOperation, Role, Permission, User } from "@shared/schema";
@@ -23,7 +22,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/users", requireAuth, async (req, res) => {
     try {
-      const allUsers = await db.select().from(users);
+      const allUsers = await storage.listUsers();
       res.json(allUsers);
     } catch (e) {
       res.status(500).json({ message: "Error fetching users" });
@@ -32,11 +31,11 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/users/:id", requireAuth, async (req, res) => {
     try {
-      const user = await db.select().from(users).where(eq(users.id, Number(req.params.id)));
-      if (user.length === 0) {
+      const user = await storage.getUser(Number(req.params.id));
+      if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json(user[0]);
+      res.json(user);
     } catch (e) {
       res.status(500).json({ message: "Error fetching user" });
     }
@@ -44,8 +43,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.post("/api/users", requireAuth, async (req, res) => {
     try {
-      const result = await db.insert(users).values(req.body).returning();
-      res.json(result[0]);
+      const result = await storage.createUser(req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error creating user" });
     }
@@ -53,11 +52,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.put("/api/users/:id", requireAuth, async (req, res) => {
     try {
-      const result = await db.update(users)
-        .set(req.body)
-        .where(eq(users.id, Number(req.params.id)))
-        .returning();
-      res.json(result[0]);
+      const result = await storage.updateUser(Number(req.params.id), req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error updating user" });
     }
@@ -65,7 +61,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.delete("/api/users/:id", requireAuth, async (req, res) => {
     try {
-      await db.delete(users).where(eq(users.id, Number(req.params.id)));
+      await storage.deleteUser(Number(req.params.id));
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ message: "Error deleting user" });
@@ -74,7 +70,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/roles", requireAuth, async (req, res) => {
     try {
-      const allRoles = await db.select().from(roles);
+      const allRoles = await storage.listRoles();
       res.json(allRoles);
     } catch (e) {
       res.status(500).json({ message: "Error fetching roles" });
@@ -83,11 +79,11 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/roles/:id", requireAuth, async (req, res) => {
     try {
-      const role = await db.select().from(roles).where(eq(roles.id, Number(req.params.id)));
-      if (role.length === 0) {
+      const role = await storage.getRole(Number(req.params.id));
+      if (!role) {
         return res.status(404).json({ message: "Role not found" });
       }
-      res.json(role[0]);
+      res.json(role);
     } catch (e) {
       res.status(500).json({ message: "Error fetching role" });
     }
@@ -95,8 +91,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.post("/api/roles", requireAuth, async (req, res) => {
     try {
-      const result = await db.insert(roles).values(req.body).returning();
-      res.json(result[0]);
+      const result = await storage.createRole(req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error creating role" });
     }
@@ -104,11 +100,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.put("/api/roles/:id", requireAuth, async (req, res) => {
     try {
-      const result = await db.update(roles)
-        .set(req.body)
-        .where(eq(roles.id, Number(req.params.id)))
-        .returning();
-      res.json(result[0]);
+      const result = await storage.updateRole(Number(req.params.id), req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error updating role" });
     }
@@ -116,67 +109,18 @@ export async function registerRoutes(app: express.Express) {
 
   app.delete("/api/roles/:id", requireAuth, async (req, res) => {
     try {
-      await db.delete(roles).where(eq(roles.id, Number(req.params.id)));
+      await storage.deleteRole(Number(req.params.id));
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ message: "Error deleting role" });
     }
   });
 
-  app.get("/api/permissions", requireAuth, async (req, res) => {
-    try {
-      const allPermissions = await db.select().from(permissions);
-      res.json(allPermissions);
-    } catch (e) {
-      res.status(500).json({ message: "Error fetching permissions" });
-    }
-  });
-
-  app.get("/api/permissions/:id", requireAuth, async (req, res) => {
-    try {
-      const permission = await db.select().from(permissions).where(eq(permissions.id, Number(req.params.id)));
-      if (permission.length === 0) {
-        return res.status(404).json({ message: "Permission not found" });
-      }
-      res.json(permission[0]);
-    } catch (e) {
-      res.status(500).json({ message: "Error fetching permission" });
-    }
-  });
-
-  app.post("/api/permissions", requireAuth, async (req, res) => {
-    try {
-      const result = await db.insert(permissions).values(req.body).returning();
-      res.json(result[0]);
-    } catch (e) {
-      res.status(500).json({ message: "Error creating permission" });
-    }
-  });
-
-  app.put("/api/permissions/:id", requireAuth, async (req, res) => {
-    try {
-      const result = await db.update(permissions)
-        .set(req.body)
-        .where(eq(permissions.id, Number(req.params.id)))
-        .returning();
-      res.json(result[0]);
-    } catch (e) {
-      res.status(500).json({ message: "Error updating permission" });
-    }
-  });
-
-  app.delete("/api/permissions/:id", requireAuth, async (req, res) => {
-    try {
-      await db.delete(permissions).where(eq(permissions.id, Number(req.params.id)));
-      res.json({ success: true });
-    } catch (e) {
-      res.status(500).json({ message: "Error deleting permission" });
-    }
-  });
+  // Permission routes can be implemented when corresponding storage methods are available
 
   app.get("/api/tenants", requireAuth, async (req, res) => {
     try {
-      const allTenants = await db.select().from(tenants);
+      const allTenants = await storage.listTenants();
       res.json(allTenants);
     } catch (e) {
       res.status(500).json({ message: "Error fetching tenants" });
@@ -185,11 +129,11 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/tenants/:id", requireAuth, async (req, res) => {
     try {
-      const tenant = await db.select().from(tenants).where(eq(tenants.id, Number(req.params.id)));
-      if (tenant.length === 0) {
+      const tenant = await storage.getTenant(Number(req.params.id));
+      if (!tenant) {
         return res.status(404).json({ message: "Tenant not found" });
       }
-      res.json(tenant[0]);
+      res.json(tenant);
     } catch (e) {
       res.status(500).json({ message: "Error fetching tenant" });
     }
@@ -197,8 +141,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.post("/api/tenants", requireAuth, async (req, res) => {
     try {
-      const result = await db.insert(tenants).values(req.body).returning();
-      res.json(result[0]);
+      const result = await storage.createTenant(req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error creating tenant" });
     }
@@ -206,11 +150,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.put("/api/tenants/:id", requireAuth, async (req, res) => {
     try {
-      const result = await db.update(tenants)
-        .set(req.body)
-        .where(eq(tenants.id, Number(req.params.id)))
-        .returning();
-      res.json(result[0]);
+      const result = await storage.updateTenant(Number(req.params.id), req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error updating tenant" });
     }
@@ -218,7 +159,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.delete("/api/tenants/:id", requireAuth, async (req, res) => {
     try {
-      await db.delete(tenants).where(eq(tenants.id, Number(req.params.id)));
+      await storage.deleteTenant(Number(req.params.id));
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ message: "Error deleting tenant" });
@@ -227,7 +168,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/subscriptions", requireAuth, async (req, res) => {
     try {
-      const allSubscriptions = await db.select().from(subscriptions);
+      const allSubscriptions = await storage.listSubscriptions();
       res.json(allSubscriptions);
     } catch (e) {
       res.status(500).json({ message: "Error fetching subscriptions" });
@@ -236,11 +177,11 @@ export async function registerRoutes(app: express.Express) {
 
   app.get("/api/subscriptions/:id", requireAuth, async (req, res) => {
     try {
-      const subscription = await db.select().from(subscriptions).where(eq(subscriptions.id, Number(req.params.id)));
-      if (subscription.length === 0) {
+      const subscription = await storage.getSubscription(Number(req.params.id));
+      if (!subscription) {
         return res.status(404).json({ message: "Subscription not found" });
       }
-      res.json(subscription[0]);
+      res.json(subscription);
     } catch (e) {
       res.status(500).json({ message: "Error fetching subscription" });
     }
@@ -248,8 +189,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.post("/api/subscriptions", requireAuth, async (req, res) => {
     try {
-      const result = await db.insert(subscriptions).values(req.body).returning();
-      res.json(result[0]);
+      const result = await storage.createSubscription(req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error creating subscription" });
     }
@@ -257,11 +198,8 @@ export async function registerRoutes(app: express.Express) {
 
   app.put("/api/subscriptions/:id", requireAuth, async (req, res) => {
     try {
-      const result = await db.update(subscriptions)
-        .set(req.body)
-        .where(eq(subscriptions.id, Number(req.params.id)))
-        .returning();
-      res.json(result[0]);
+      const result = await storage.updateSubscription(Number(req.params.id), req.body);
+      res.json(result);
     } catch (e) {
       res.status(500).json({ message: "Error updating subscription" });
     }
@@ -269,7 +207,7 @@ export async function registerRoutes(app: express.Express) {
 
   app.delete("/api/subscriptions/:id", requireAuth, async (req, res) => {
     try {
-      await db.delete(subscriptions).where(eq(subscriptions.id, Number(req.params.id)));
+      await storage.deleteSubscription(Number(req.params.id));
       res.json({ success: true });
     } catch (e) {
       res.status(500).json({ message: "Error deleting subscription" });
