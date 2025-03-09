@@ -102,16 +102,25 @@ export class MemStorage implements IStorage {
     });
     
     // Initialize with some demo data
-    this.initializeDemoData();
+    // Call the async method, but don't await it in the constructor
+    this.initializeDemoData().catch(error => {
+      console.error("Failed to initialize demo data:", error);
+    });
   }
   
-  private initializeDemoData() {
+  private async initializeDemoData() {
+    // Import the hashPassword function from auth.ts
+    const { hashPassword } = await import('./auth');
+    
     // Create default admin user if there are no users
     if (this.usersData.size === 0) {
+      // Hash the password "password"
+      const hashedPassword = await hashPassword("password");
+      
       const adminUser: User = {
         id: this.userIdCounter++,
         username: 'admin',
-        password: 'admin_password_hash', // This should be properly hashed in production
+        password: hashedPassword,
         fullName: 'Admin User',
         email: 'admin@example.com',
         role: 'admin',

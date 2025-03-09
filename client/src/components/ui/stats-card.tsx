@@ -42,12 +42,13 @@ export function StatsCard({
         <div className="bg-gray-50 px-5 py-3">
           <div className="text-sm">
             <Link href={linkHref}>
-              <a className={cn("font-medium hover:text-blue-700", iconColor.includes('blue') ? 'text-blue-500' : 
+              <div className={cn("font-medium cursor-pointer hover:text-blue-700", 
+                iconColor.includes('blue') ? 'text-blue-500' : 
                 iconColor.includes('indigo') ? 'text-indigo-600' : 
                 iconColor.includes('green') ? 'text-green-600' : 
                 iconColor.includes('amber') ? 'text-amber-600' : 'text-blue-500')}>
                 {linkText}
-              </a>
+              </div>
             </Link>
           </div>
         </div>
