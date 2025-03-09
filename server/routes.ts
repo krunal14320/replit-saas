@@ -19,6 +19,11 @@ export async function registerRoutes(app: express.Express) {
 
   // Auth routes are registered by setupAuth function
   setupAuth(app);
+  
+  // User profile route
+  app.get("/api/me", requireAuth, (req, res) => {
+    res.json(req.user);
+  });
 
   app.get("/api/users", requireAuth, async (req, res) => {
     try {
