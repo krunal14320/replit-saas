@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader2 } from "lucide-react";
+import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,11 +61,11 @@ export default function AuthPage() {
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="login">
                 <LoginForm isSubmitting={loginMutation.isPending} onSubmit={loginMutation.mutate} />
               </TabsContent>
-              
+
               <TabsContent value="register">
                 <RegisterForm isSubmitting={registerMutation.isPending} onSubmit={registerMutation.mutate} />
               </TabsContent>
@@ -73,7 +73,7 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Hero Column */}
       <div className="hidden sm:flex flex-1 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-12 flex-col justify-center">
         <div className="max-w-md">
@@ -146,7 +146,7 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="password"
@@ -160,11 +160,11 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
             </FormItem>
           )}
         />
-        
+
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
               Signing in...
             </>
           ) : (
@@ -219,7 +219,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="email"
@@ -233,7 +233,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="username"
@@ -247,7 +247,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="password"
@@ -261,7 +261,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="confirmPassword"
@@ -275,11 +275,11 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-        
+
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
               Creating account...
             </>
           ) : (
