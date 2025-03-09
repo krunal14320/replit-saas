@@ -153,7 +153,7 @@ class Storage {
   }
 }
 
-// Export the storage instance
+// Create and export storage instance
 export const storage = new Storage();
 
 // Run migrations
