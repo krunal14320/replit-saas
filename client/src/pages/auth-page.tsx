@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader } from "lucide-react";
+import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
