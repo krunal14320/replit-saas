@@ -93,7 +93,7 @@ export function TenantForm({ open, onOpenChange, editTenant, onSuccess }: Tenant
       onOpenChange(false);
       if (onSuccess) onSuccess();
       
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "An error occurred while saving the tenant",
