@@ -4,17 +4,28 @@ import { TopNavbar } from "@/components/ui/top-navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Shield, Edit, Trash } from "lucide-react";
+import { Shield, Edit, Trash, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { RoleForm, Role, Permission } from "@/components/role/role-form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 // This is a simplified RBAC page as the backend doesn't have full RBAC capabilities yet
 export default function RolesPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const isAdmin = user?.role === "admin";
   
-  const rolePermissions = [
+  const [roleFormOpen, setRoleFormOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<Role | undefined>(undefined);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingRole, setDeletingRole] = useState<Role | undefined>(undefined);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // We'll use state to manage the roles data
+  const [rolePermissions, setRolePermissions] = useState<Role[]>([
     {
-      role: "admin",
+      name: "admin",
       description: "Full system access",
       permissions: [
         { name: "Users", create: true, read: true, update: true, delete: true },
@@ -24,7 +35,7 @@ export default function RolesPage() {
       ]
     },
     {
-      role: "editor",
+      name: "editor",
       description: "Can edit most resources but cannot delete",
       permissions: [
         { name: "Users", create: true, read: true, update: true, delete: false },
@@ -34,7 +45,7 @@ export default function RolesPage() {
       ]
     },
     {
-      role: "user",
+      name: "user",
       description: "Basic user with limited permissions",
       permissions: [
         { name: "Users", create: false, read: true, update: false, delete: false },
@@ -43,7 +54,48 @@ export default function RolesPage() {
         { name: "Settings", create: false, read: true, update: false, delete: false },
       ]
     }
-  ];
+  ]);
+
+  const handleCreateRole = () => {
+    setEditingRole(undefined);
+    setRoleFormOpen(true);
+  };
+
+  const handleEditRole = (role: Role) => {
+    setEditingRole(role);
+    setRoleFormOpen(true);
+  };
+
+  const handleDeleteRole = (role: Role) => {
+    setDeletingRole(role);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!deletingRole) return;
+    
+    setIsDeleting(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setRolePermissions(prev => prev.filter(role => role.name !== deletingRole.name));
+      
+      toast({
+        title: "Role deleted",
+        description: `The role "${deletingRole.name}" has been deleted successfully`,
+      });
+      
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setDeletingRole(undefined);
+    }, 1000);
+  };
+
+  const handleRoleFormSuccess = () => {
+    // Refresh the roles data (in a real app, you'd fetch from the API)
+    // For now, we'll just close the form and show a success message
+    setRoleFormOpen(false);
+  };
 
   return (
     <div className="min-h-screen flex overflow-hidden bg-gray-50">
@@ -69,7 +121,7 @@ export default function RolesPage() {
                     <CardDescription>Overview of available roles and their descriptions</CardDescription>
                   </div>
                   {isAdmin && (
-                    <Button disabled>
+                    <Button onClick={handleCreateRole}>
                       Create Role
                     </Button>
                   )}
@@ -86,18 +138,28 @@ export default function RolesPage() {
                   </TableHeader>
                   <TableBody>
                     {rolePermissions.map((role) => (
-                      <TableRow key={role.role}>
+                      <TableRow key={role.name}>
                         <TableCell className="font-medium flex items-center">
                           <Shield className="h-4 w-4 mr-2 text-blue-500" />
-                          <span className="capitalize">{role.role}</span>
+                          <span className="capitalize">{role.name}</span>
                         </TableCell>
                         <TableCell>{role.description}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
-                            <Button variant="ghost" size="sm" disabled={!isAdmin}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              disabled={!isAdmin || role.name === "admin"} 
+                              onClick={() => handleEditRole(role)}
+                            >
                               <Edit className="h-4 w-4 mr-1" /> Edit
                             </Button>
-                            <Button variant="ghost" size="sm" disabled={!isAdmin}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              disabled={!isAdmin || role.name === "admin"} 
+                              onClick={() => handleDeleteRole(role)}
+                            >
                               <Trash className="h-4 w-4 mr-1" /> Delete
                             </Button>
                           </div>
@@ -122,40 +184,48 @@ export default function RolesPage() {
                       <TableRow>
                         <TableHead>Resource</TableHead>
                         <TableHead>Permission</TableHead>
-                        <TableHead>Admin</TableHead>
-                        <TableHead>Editor</TableHead>
-                        <TableHead>User</TableHead>
+                        {rolePermissions.map(role => (
+                          <TableHead key={role.name} className="capitalize">{role.name}</TableHead>
+                        ))}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {rolePermissions[0].permissions.map((permission) => (
-                        <>
-                          <TableRow key={`${permission.name}-create`}>
+                        <Fragment key={permission.name}>
+                          <TableRow>
                             <TableCell rowSpan={4} className="font-medium">{permission.name}</TableCell>
                             <TableCell>Create</TableCell>
-                            <TableCell>{rolePermissions[0].permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[1].permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[2].permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}</TableCell>
+                            {rolePermissions.map(role => (
+                              <TableCell key={`${role.name}-${permission.name}-create`}>
+                                {role.permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}
+                              </TableCell>
+                            ))}
                           </TableRow>
-                          <TableRow key={`${permission.name}-read`}>
+                          <TableRow>
                             <TableCell>Read</TableCell>
-                            <TableCell>{rolePermissions[0].permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[1].permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[2].permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}</TableCell>
+                            {rolePermissions.map(role => (
+                              <TableCell key={`${role.name}-${permission.name}-read`}>
+                                {role.permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}
+                              </TableCell>
+                            ))}
                           </TableRow>
-                          <TableRow key={`${permission.name}-update`}>
+                          <TableRow>
                             <TableCell>Update</TableCell>
-                            <TableCell>{rolePermissions[0].permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[1].permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[2].permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}</TableCell>
+                            {rolePermissions.map(role => (
+                              <TableCell key={`${role.name}-${permission.name}-update`}>
+                                {role.permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}
+                              </TableCell>
+                            ))}
                           </TableRow>
-                          <TableRow key={`${permission.name}-delete`}>
+                          <TableRow>
                             <TableCell>Delete</TableCell>
-                            <TableCell>{rolePermissions[0].permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[1].permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}</TableCell>
-                            <TableCell>{rolePermissions[2].permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}</TableCell>
+                            {rolePermissions.map(role => (
+                              <TableCell key={`${role.name}-${permission.name}-delete`}>
+                                {role.permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}
+                              </TableCell>
+                            ))}
                           </TableRow>
-                        </>
+                        </Fragment>
                       ))}
                     </TableBody>
                   </Table>
@@ -165,6 +235,50 @@ export default function RolesPage() {
           </div>
         </main>
       </div>
+      
+      {/* Role Form Dialog */}
+      <RoleForm 
+        open={roleFormOpen} 
+        onOpenChange={setRoleFormOpen}
+        editRole={editingRole}
+        onSuccess={handleRoleFormSuccess}
+      />
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Role</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the "{deletingRole?.name}" role? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center p-4 border rounded-md bg-amber-50 border-amber-200 text-amber-700">
+            <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+            <p className="text-sm">
+              Users with this role will lose their permissions and may lose access to certain features.
+            </p>
+          </div>
+          <DialogFooter className="flex space-x-2 justify-end">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
