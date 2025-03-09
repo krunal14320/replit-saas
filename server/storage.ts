@@ -5,7 +5,12 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import session from "express-session";
 import connectSqlite3 from "connect-sqlite3";
 import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import * as schema from "../shared/schema";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const sqlite = new Database("data.db");
 const db = drizzle(sqlite, { schema });
