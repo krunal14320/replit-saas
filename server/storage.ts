@@ -161,4 +161,10 @@ class Storage {
 export const storage = new Storage();
 
 // Run migrations
-migrate(db, { migrationsFolder: path.join(__dirname, "../drizzle") });
+try {
+  migrate(db, { migrationsFolder: path.join(__dirname, "../drizzle") });
+  console.log("Migrations completed successfully");
+} catch (error) {
+  console.error("Migration error:", error);
+  // Continue execution even if migrations fail
+}
