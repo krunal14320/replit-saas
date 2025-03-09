@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/hooks/use-sidebar";
-import { ThemeToggle } from "@/components/ui/theme-toggle"; // Added import
 
 type SidebarLinkProps = {
   href: string;
@@ -52,17 +51,17 @@ type SubMenuProps = {
 const SubMenu = ({ title, icon, children, defaultOpen = false }: SubMenuProps) => {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(defaultOpen);
-
+  
   // Auto-open submenu when one of its children is active
   useEffect(() => {
     const childLinks = Array.isArray(children) 
       ? children
       : [children];
-
+    
     const shouldOpen = childLinks.some((child: React.ReactElement) => {
       return child && child.props && child.props.href === location;
     });
-
+    
     if (shouldOpen) {
       setIsOpen(true);
     }
@@ -83,7 +82,7 @@ const SubMenu = ({ title, icon, children, defaultOpen = false }: SubMenuProps) =
           )}
         />
       </button>
-
+      
       {isOpen && (
         <div className="mt-1 pl-4 space-y-1">
           {children}
@@ -108,7 +107,7 @@ export function Sidebar() {
           onClick={close}
         />
       )}
-
+      
       <div
         className={cn(
           "fixed z-30 inset-y-0 left-0 w-64 transition duration-300 transform bg-gray-900 overflow-y-auto md:translate-x-0 md:static md:inset-0",
@@ -120,16 +119,13 @@ export function Sidebar() {
             <Zap className="h-8 w-8 text-blue-500" />
             <span className="ml-2 text-xl font-semibold text-white">SaaS Admin</span>
           </div>
-          <div className="flex items-center"> {/* Added div for better layout */}
-            <ThemeToggle /> {/* Added ThemeToggle component */}
-            <button onClick={close} className="text-gray-300 md:hidden">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+          <button onClick={close} className="text-gray-300 md:hidden">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-
+        
         <nav className="mt-5 px-2">
           <SidebarLink 
             href="/" 
@@ -139,7 +135,7 @@ export function Sidebar() {
           >
             Dashboard
           </SidebarLink>
-
+          
           <SubMenu 
             title="User Management" 
             icon={<Users />}
@@ -153,7 +149,7 @@ export function Sidebar() {
             >
               Users
             </SidebarLink>
-
+            
             {isAdmin && (
               <SidebarLink 
                 href="/roles" 
@@ -165,7 +161,7 @@ export function Sidebar() {
               </SidebarLink>
             )}
           </SubMenu>
-
+          
           {isAdmin && (
             <SubMenu 
               title="Tenants" 
@@ -182,7 +178,7 @@ export function Sidebar() {
               </SidebarLink>
             </SubMenu>
           )}
-
+          
           {isAdmin && (
             <SubMenu 
               title="Subscriptions" 
@@ -199,7 +195,7 @@ export function Sidebar() {
               </SidebarLink>
             </SubMenu>
           )}
-
+          
           <SidebarLink 
             href="/settings" 
             icon={<Settings />} 
@@ -213,6 +209,3 @@ export function Sidebar() {
     </>
   );
 }
-
-// Import the proper ThemeToggle component
-import { ThemeToggle } from "./theme-toggle";
