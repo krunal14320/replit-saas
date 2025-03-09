@@ -3,17 +3,23 @@ import express from "express";
 import http from "http";
 import { db } from "./storage";
 import { roles, users, tenants, subscriptions, permissions } from "./storage";
-import { auth, requireAuth } from "./auth";
+import { setupAuth } from "./auth";
 import { eq, sql } from "drizzle-orm";
 import { PermissionOperation, Role, Permission, User } from "@shared/schema";
+
+// Authentication middleware
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
+};
 
 export async function registerRoutes(app: express.Express) {
   const server = http.createServer(app);
 
-  app.post("/api/auth/login", auth.login);
-  app.post("/api/auth/register", auth.register);
-  app.post("/api/auth/logout", auth.logout);
-  app.get("/api/auth/me", requireAuth, auth.me);
+  // Auth routes are registered by setupAuth function
+  setupAuth(app);
 
   app.get("/api/users", requireAuth, async (req, res) => {
     try {
