@@ -107,6 +107,24 @@ export const insertSettingSchema = createInsertSchema(settings).pick({
   value: true,
 });
 
+// Roles table
+export const roles = pgTable("roles", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  permissions: text("permissions").notNull(), // Stored as JSON string
+});
+
+export const insertRoleSchema = createInsertSchema(roles).extend({
+  permissions: z.array(z.object({
+    name: z.string(),
+    create: z.boolean(),
+    read: z.boolean(),
+    update: z.boolean(),
+    delete: z.boolean()
+  })).transform(val => JSON.stringify(val))
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -125,3 +143,6 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type Setting = typeof settings.$inferSelect;
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
+
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
