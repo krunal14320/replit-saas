@@ -106,7 +106,7 @@ export function TenantForm({ open, onOpenChange, editTenant, onSuccess }: Tenant
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editTenant ? 'Edit Tenant' : 'Create Tenant'}</DialogTitle>
           <DialogDescription>
