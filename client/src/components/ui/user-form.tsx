@@ -98,7 +98,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
       // Prepare the data for the API
       const userData = {
         ...values,
-        tenantId: values.tenantId ? parseInt(values.tenantId) : null,
+        tenantId: values.tenantId === "null" ? null : (values.tenantId ? parseInt(values.tenantId) : null),
       };
       
       // Remove empty password when editing
@@ -128,7 +128,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
       onOpenChange(false);
       if (onSuccess) onSuccess();
       
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "An error occurred while saving the user",
@@ -251,7 +251,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No tenant (Global)</SelectItem>
+                      <SelectItem value="null">No tenant (Global)</SelectItem>
                       {tenants.map(tenant => (
                         <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.name}
