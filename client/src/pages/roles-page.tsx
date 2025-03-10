@@ -113,42 +113,44 @@ export default function RolesPage() {
 
   // Render permission rows for the matrix table
   const renderPermissionRows = () => {
-    return rolePermissions[0].permissions.flatMap((permission) => {
-      return [
-        <TableRow key={`${permission.name}-create`}>
-          <TableCell rowSpan={4} className="font-medium">{permission.name}</TableCell>
-          <TableCell>Create</TableCell>
-          {rolePermissions.map(role => (
-            <TableCell key={`${role.name}-${permission.name}-create`}>
-              {role.permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}
-            </TableCell>
-          ))}
-        </TableRow>,
-        <TableRow key={`${permission.name}-read`}>
-          <TableCell>Read</TableCell>
-          {rolePermissions.map(role => (
-            <TableCell key={`${role.name}-${permission.name}-read`}>
-              {role.permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}
-            </TableCell>
-          ))}
-        </TableRow>,
-        <TableRow key={`${permission.name}-update`}>
-          <TableCell>Update</TableCell>
-          {rolePermissions.map(role => (
-            <TableCell key={`${role.name}-${permission.name}-update`}>
-              {role.permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}
-            </TableCell>
-          ))}
-        </TableRow>,
-        <TableRow key={`${permission.name}-delete`}>
-          <TableCell>Delete</TableCell>
-          {rolePermissions.map(role => (
-            <TableCell key={`${role.name}-${permission.name}-delete`}>
-              {role.permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}
-            </TableCell>
-          ))}
-        </TableRow>
-      ];
+    return rolePermissions[0].permissions.map((permission) => {
+      return (
+        <React.Fragment key={permission.name}>
+          <TableRow>
+            <TableCell rowSpan={4} className="font-medium">{permission.name}</TableCell>
+            <TableCell>Create</TableCell>
+            {rolePermissions.map(role => (
+              <TableCell key={`${role.name}-${permission.name}-create`}>
+                {role.permissions.find(p => p.name === permission.name)?.create ? "✓" : "✗"}
+              </TableCell>
+            ))}
+          </TableRow>
+          <TableRow>
+            <TableCell>Read</TableCell>
+            {rolePermissions.map(role => (
+              <TableCell key={`${role.name}-${permission.name}-read`}>
+                {role.permissions.find(p => p.name === permission.name)?.read ? "✓" : "✗"}
+              </TableCell>
+            ))}
+          </TableRow>
+          <TableRow>
+            <TableCell>Update</TableCell>
+            {rolePermissions.map(role => (
+              <TableCell key={`${role.name}-${permission.name}-update`}>
+                {role.permissions.find(p => p.name === permission.name)?.update ? "✓" : "✗"}
+              </TableCell>
+            ))}
+          </TableRow>
+          <TableRow>
+            <TableCell>Delete</TableCell>
+            {rolePermissions.map(role => (
+              <TableCell key={`${role.name}-${permission.name}-delete`}>
+                {role.permissions.find(p => p.name === permission.name)?.delete ? "✓" : "✗"}
+              </TableCell>
+            ))}
+          </TableRow>
+        </React.Fragment>
+      );
     });
   };
 
@@ -205,7 +207,7 @@ export default function RolesPage() {
                               variant="ghost" 
                               size="sm" 
                               disabled={!isAdmin || role.name === "admin"} 
-                              onClick={() => handleEditRole({...role})}
+                              onClick={() => handleEditRole(role)}
                             >
                               <Edit className="h-4 w-4 mr-1" /> Edit
                             </Button>

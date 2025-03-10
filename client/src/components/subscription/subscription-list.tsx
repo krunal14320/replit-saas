@@ -346,7 +346,7 @@ function SubscriptionForm({
       
       onOpenChange(false);
       
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "An error occurred while saving the subscription",
@@ -359,7 +359,7 @@ function SubscriptionForm({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{editSubscription ? 'Edit Subscription' : 'Create Subscription'}</DialogTitle>
           <DialogDescription>

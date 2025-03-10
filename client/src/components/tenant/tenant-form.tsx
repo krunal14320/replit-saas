@@ -93,7 +93,7 @@ export function TenantForm({ open, onOpenChange, editTenant, onSuccess }: Tenant
       onOpenChange(false);
       if (onSuccess) onSuccess();
       
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "An error occurred while saving the tenant",
@@ -106,7 +106,7 @@ export function TenantForm({ open, onOpenChange, editTenant, onSuccess }: Tenant
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{editTenant ? 'Edit Tenant' : 'Create Tenant'}</DialogTitle>
           <DialogDescription>

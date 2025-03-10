@@ -98,7 +98,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
       // Prepare the data for the API
       const userData = {
         ...values,
-        tenantId: values.tenantId === "null" ? null : (values.tenantId ? parseInt(values.tenantId) : null),
+        tenantId: values.tenantId ? parseInt(values.tenantId) : null,
       };
       
       // Remove empty password when editing
@@ -128,7 +128,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
       onOpenChange(false);
       if (onSuccess) onSuccess();
       
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "An error occurred while saving the user",
@@ -141,7 +141,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{editUser ? 'Edit User' : 'Add New User'}</DialogTitle>
           <DialogDescription>
@@ -251,7 +251,7 @@ export function UserForm({ open, onOpenChange, editUser, onSuccess }: UserFormPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="null">No tenant (Global)</SelectItem>
+                      <SelectItem value="">No tenant (Global)</SelectItem>
                       {tenants.map(tenant => (
                         <SelectItem key={tenant.id} value={tenant.id.toString()}>
                           {tenant.name}
