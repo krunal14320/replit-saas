@@ -1,21 +1,14 @@
-
 import { defineConfig } from "drizzle-kit";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-function dirname(path) {
-  return new URL(".", path).pathname;
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL, ensure the database is provisioned");
 }
 
 export default defineConfig({
+  out: "./migrations",
   schema: "./shared/schema.ts",
-  out: "./drizzle",
-  dialect: "better-sqlite",
-  driver: "better-sqlite",
+  dialect: "postgresql",
   dbCredentials: {
-    url: "./data.db"
-  }
+    url: process.env.DATABASE_URL,
+  },
 });

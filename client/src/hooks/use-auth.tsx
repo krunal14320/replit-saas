@@ -1,104 +1,94 @@
-import { createContext, useContext } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-//import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema"; //These are not used in the replacement code.
+import { createContext, ReactNode, useContext } from "react";
+import {
+  useQuery,
+  useMutation,
+  UseMutationResult,
+} from "@tanstack/react-query";
+import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
+import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-
-interface AuthContextType {
-  user: any | null; // Replaced SelectUser with any for broader compatibility with the axios changes.
+type AuthContextType = {
+  user: SelectUser | null;
   isLoading: boolean;
-  login: (credentials: { username: string; password: string }) => Promise<any>; // Replaced SelectUser with any
-  register: (userData: {
-    username: string;
-    email: string;
-    password: string;
-  }) => Promise<any>; // Replaced SelectUser with any
-  logout: () => Promise<void>;
-}
+  error: Error | null;
+  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
+  logoutMutation: UseMutationResult<void, Error, void>;
+  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+};
 
-const AuthContext = createContext<AuthContextType | null>(null);
+type LoginData = Pick<InsertUser, "username" | "password">;
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
+export const AuthContext = createContext<AuthContextType | null>(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-
-  // Fetch current user
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["user"],
-    queryFn: async () => {
-      try {
-        const { data } = await axios.get("/api/auth/me");
-        return data;
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        return null;
-      }
-    },
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useQuery<SelectUser | null, Error>({
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
-  // Login mutation
   const loginMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
-      const { data } = await axios.post("/api/auth/login", credentials);
-      return data;
+    mutationFn: async (credentials: LoginData) => {
+      const res = await apiRequest("POST", "/api/login", credentials);
+      return await res.json();
     },
-    onSuccess: (data: any) => { // Replaced SelectUser with any
-      queryClient.setQueryData(["user"], data);
+    onSuccess: (user: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
-        description: `Welcome back, ${data.fullName || data.username}!`,
+        description: `Welcome back, ${user.fullName || user.username}!`,
       });
     },
-    onError: (error: any) => { // More robust error handling
+    onError: (error: Error) => {
       toast({
         title: "Login failed",
-        description: error.response?.data?.message || "Invalid username or password",
+        description: error.message || "Invalid username or password",
         variant: "destructive",
       });
     },
   });
 
-  // Register mutation
   const registerMutation = useMutation({
-    mutationFn: async (userData: {
-      username: string;
-      email: string;
-      password: string;
-    }) => {
-      const { data } = await axios.post("/api/auth/register", userData);
-      return data;
+    mutationFn: async (credentials: InsertUser) => {
+      const res = await apiRequest("POST", "/api/register", credentials);
+      return await res.json();
     },
-    onSuccess: (data: any) => { // Replaced SelectUser with any
-      queryClient.setQueryData(["user"], data);
+    onSuccess: (user: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Registration successful",
-        description: `Welcome, ${data.fullName || data.username}!`,
+        description: `Welcome, ${user.fullName || user.username}!`,
       });
     },
-    onError: (error: any) => { // More robust error handling
+    onError: (error: Error) => {
       toast({
         title: "Registration failed",
-        description: error.response?.data?.message || "Could not create account",
+        description: error.message || "Could not create account",
         variant: "destructive",
       });
     },
   });
 
-  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await axios.post("/api/auth/logout");
+      await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
-      queryClient.setQueryData(["user"], null);
-      // Force a refresh after logout
-      window.location.href = "/auth";
+      queryClient.setQueryData(["/api/user"], null);
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
     },
-    onError: (error: any) => { // More robust error handling
+    onError: (error: Error) => {
       toast({
         title: "Logout failed",
-        description: error.response?.data?.message || "Could not log out",
+        description: error.message || "Could not log out",
         variant: "destructive",
       });
     },
@@ -107,11 +97,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user ?? null,
         isLoading,
-        login: loginMutation.mutateAsync,
-        register: registerMutation.mutateAsync,
-        logout: logoutMutation.mutateAsync,
+        error,
+        loginMutation,
+        logoutMutation,
+        registerMutation,
       }}
     >
       {children}

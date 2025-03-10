@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader, Loader2, Eye, EyeOff } from "lucide-react";
+import { Zap, Lock, Mail, User, UserPlus, LogIn, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { insertUserSchema } from "@shared/schema";
 
 export default function AuthPage() {
@@ -61,11 +61,11 @@ export default function AuthPage() {
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
-
+              
               <TabsContent value="login">
                 <LoginForm isSubmitting={loginMutation.isPending} onSubmit={loginMutation.mutate} />
               </TabsContent>
-
+              
               <TabsContent value="register">
                 <RegisterForm isSubmitting={registerMutation.isPending} onSubmit={registerMutation.mutate} />
               </TabsContent>
@@ -73,7 +73,7 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </div>
-
+      
       {/* Hero Column */}
       <div className="hidden sm:flex flex-1 bg-gradient-to-br from-blue-600 to-blue-800 text-white p-12 flex-col justify-center">
         <div className="max-w-md">
@@ -117,7 +117,6 @@ export default function AuthPage() {
 
 // Login Form Component
 function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit: (data: { username: string; password: string }) => void }) {
-  const [showPassword, setShowPassword] = useState(false);
   const loginSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -131,14 +130,9 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof loginSchema>) => {
-    console.log("Login form submitted:", data);
-    onSubmit(data);
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="username"
@@ -146,22 +140,13 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </span>
-                  <Input
-                    className="pl-10"
-                    placeholder="Enter your username"
-                    {...field}
-                  />
-                </div>
+                <Input placeholder="admin" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="password"
@@ -169,34 +154,13 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </span>
-                  <Input
-                    className="pl-10"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    {...field}
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <Eye className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
-                    )}
-                  </button>
-                </div>
+                <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
@@ -206,7 +170,7 @@ function LoginForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSubmit
           ) : (
             <>
               <LogIn className="mr-2 h-4 w-4" />
-              Sign in
+              Sign In
             </>
           )}
         </Button>
@@ -255,7 +219,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="email"
@@ -269,7 +233,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="username"
@@ -283,7 +247,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="password"
@@ -297,7 +261,7 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="confirmPassword"
@@ -311,11 +275,11 @@ function RegisterForm({ isSubmitting, onSubmit }: { isSubmitting: boolean; onSub
             </FormItem>
           )}
         />
-
+        
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
-              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Creating account...
             </>
           ) : (
